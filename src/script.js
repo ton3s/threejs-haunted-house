@@ -19,10 +19,6 @@ const fogColor = '#262837'
 const fog = new THREE.Fog(fogColor, 1, 15)
 scene.fog = fog
 
-// Axes Helper
-const axesHelper = new THREE.AxesHelper(5)
-scene.add(axesHelper)
-
 /**
  * Textures
  */
@@ -59,7 +55,7 @@ const grassRoughnessTexture = textureLoader.load(
 	'/textures/grass/roughness.jpg'
 )
 
-//
+// Repeat grass texture
 grassColorTexture.repeat.set(8, 8)
 grassAmbientOcclusionTexture.repeat.set(8, 8)
 grassNormalTexture.repeat.set(8, 8)
@@ -170,6 +166,7 @@ for (let i = 0; i < 50; i++) {
 	grave.position.set(x, 0.2, z)
 	grave.rotation.y = (Math.random() - 0.5) * 0.4
 	grave.rotation.z = (Math.random() - 0.5) * 0.4
+	grave.castShadow = true
 	graves.add(grave)
 }
 
@@ -203,22 +200,75 @@ scene.add(ambientLight)
 // Directional light
 const moonLight = new THREE.DirectionalLight('#b9d5ff', 0.12)
 moonLight.position.set(4, 5, -2)
+moonLight.shadow.mapSize.width = 256
+moonLight.shadow.mapSize.height = 256
+moonLight.shadow.camera.far = 15
 gui.add(moonLight, 'intensity').min(0).max(1).step(0.001)
 gui.add(moonLight.position, 'x').min(-5).max(5).step(0.001)
 gui.add(moonLight.position, 'y').min(-5).max(5).step(0.001)
 gui.add(moonLight.position, 'z').min(-5).max(5).step(0.001)
 scene.add(moonLight)
 
-const directionalLightHelper = new THREE.DirectionalLightHelper(moonLight, 1)
-scene.add(directionalLightHelper)
-
 // Door Light
 const doorLight = new THREE.PointLight('#ff7d46', 1, 7)
 doorLight.position.set(0, 2.2, 2.7)
+doorLight.shadow.mapSize.width = 256
+doorLight.shadow.mapSize.height = 256
+doorLight.shadow.camera.far = 7
 house.add(doorLight)
 
-const pointLightHelper = new THREE.PointLightHelper(doorLight, 0.5)
-scene.add(pointLightHelper)
+// Ghosts
+/**
+ * Ghosts
+ */
+const ghost1 = new THREE.PointLight('#ff00ff', 2, 3)
+ghost1.shadow.mapSize.width = 256
+ghost1.shadow.mapSize.height = 256
+ghost1.shadow.camera.far = 7
+scene.add(ghost1)
+const ghost2 = new THREE.PointLight('#00ffff', 2, 3)
+ghost2.shadow.mapSize.width = 256
+ghost2.shadow.mapSize.height = 256
+ghost2.shadow.camera.far = 7
+scene.add(ghost2)
+const ghost3 = new THREE.PointLight('#ffff00', 2, 3)
+ghost3.shadow.mapSize.width = 256
+ghost3.shadow.mapSize.height = 256
+ghost3.shadow.camera.far = 7
+scene.add(ghost3)
+
+// Shadows
+moonLight.castShadow = true
+doorLight.castShadow = true
+ghost1.castShadow = true
+ghost2.castShadow = true
+ghost3.castShadow = true
+walls.castShadow = true
+bush1.castShadow = true
+bush2.castShadow = true
+bush3.castShadow = true
+bush4.castShadow = true
+
+floor.receiveShadow = true
+
+// Axes Helper
+// const axesHelper = new THREE.AxesHelper(5)
+// scene.add(axesHelper)
+
+// Light Helpers
+// const moonDirectionalLightHelper = new THREE.DirectionalLightHelper(
+// 	moonLight,
+// 	1
+// )
+// scene.add(moonDirectionalLightHelper)
+// const doorPointLightHelper = new THREE.PointLightHelper(doorLight, 0.5)
+// scene.add(doorPointLightHelper)
+// const ghost1PointLightHelper = new THREE.PointLightHelper(ghost1, 0.5)
+// scene.add(ghost1PointLightHelper)
+// const ghost2PointLightHelper = new THREE.PointLightHelper(ghost2, 0.5)
+// scene.add(ghost2PointLightHelper)
+// const ghost3PointLightHelper = new THREE.PointLightHelper(ghost3, 0.5)
+// scene.add(ghost3PointLightHelper)
 
 /**
  * Sizes
@@ -240,6 +290,7 @@ window.addEventListener('resize', () => {
 	// Update renderer
 	renderer.setSize(sizes.width, sizes.height)
 	renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+	renderer.shadowMap.type = THREE.PCFSoftShadowMap
 })
 
 /**
@@ -271,6 +322,7 @@ renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 // Set the color of the background to be the same as the fog
 renderer.setClearColor(fogColor)
+renderer.shadowMap.enabled = true
 
 /**
  * Animate
@@ -279,6 +331,22 @@ const clock = new THREE.Clock()
 
 const tick = () => {
 	const elapsedTime = clock.getElapsedTime()
+
+	// Ghosts
+	const ghost1Angle = elapsedTime * 0.5
+	ghost1.position.x = Math.cos(ghost1Angle) * 4
+	ghost1.position.z = Math.sin(ghost1Angle) * 4
+	ghost1.position.y = Math.sin(elapsedTime * 3)
+
+	const ghost2Angle = -elapsedTime * 0.32
+	ghost2.position.x = Math.cos(ghost2Angle) * 5
+	ghost2.position.z = Math.sin(ghost2Angle) * 5
+	ghost2.position.y = Math.sin(elapsedTime * 4) + Math.sin(elapsedTime * 2.5)
+
+	const ghost3Angle = -elapsedTime * 0.18
+	ghost3.position.x = Math.cos(ghost3Angle) * (7 + Math.sin(elapsedTime * 0.32))
+	ghost3.position.z = Math.sin(ghost3Angle) * (7 + Math.sin(elapsedTime * 0.5))
+	ghost3.position.y = Math.sin(elapsedTime * 4) + Math.sin(elapsedTime * 2.5)
 
 	// Update controls
 	controls.update()
